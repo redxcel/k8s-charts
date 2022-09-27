@@ -694,7 +694,6 @@ prometheusRules:
 # container. The container definitions can include template variables.
 extraContainers: []
 
-
 # Init Containers
 #
 # Containers to run before main application container is started.
