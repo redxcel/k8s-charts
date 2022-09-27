@@ -1,0 +1,299 @@
+{{- /*
+Figure out if we are launching a Deployment for each Zone in the cluster (along
+with its own HPAs), or if we're launching just one standard deployment.
+
+If we launch a deployment per-zone, then we do some name and label patching to
+make sure that each Deployment is scaled up separately from the next one.
+*/}}
+{{- $deploymentZones := default (list "default") .Values.deploymentZones }}
+
+
+{{- /*
+...
+*/}}
+{{- if .Values.deploymentZonesTransition }}
+{{- $deploymentZones = prepend $deploymentZones "default" }}
+{{- end }}
+
+{{- /*
+The default fullName field here... we override it and append to it as we loop
+through $deploymentZones
+*/}}
+{{- $fullName            := include "rxl-common.fullname" . }}
+
+
+{{- /*
+By default, we do run the topology spread function - letting it decide
+whether or not to spread by AZ. However, in the per-zone deployments we always
+disable this.
+*/}}
+{{- $disableTopoSpreadFunction   := false }}
+
+{{- /*
+The default deploymentZoneLabel is left empty. We patch it as we loop through
+$deploymentZones
+*/}}
+{{- $deploymentZoneLabel := "" }}
+
+{{- /* Iterate through the deployment zones now... */}}
+{{- range $deploymentZone := index $deploymentZones }}
+
+{{- /*
+If $deploymentZone is NOT "default", then we know we're looping through
+them and creating a Deployment per zone. In that case, we patch a few variables
+to be zone-specific.
+*/}}
+{{- if ne $deploymentZone "default" }}
+{{- $topologyKey               := required ".Values.deploymentZones requires that .Values.topologyKey is also set" $.Values.topologyKey }}
+{{- $fullName                  = printf "%s-%s" (include "rxl-common.fullname" $) $deploymentZone }}
+{{- $deploymentZoneLabel       = printf "%s: %s" $topologyKey $deploymentZone }}
+{{- $disableTopoSpreadFunction = true }}
+{{- else }}
+{{- $fullName            = include "rxl-common.fullname" $ }}
+{{- end }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "rxl-common.labels" $ | nindent 4 }}
+    {{- with $deploymentZoneLabel }}
+    {{ . }}
+    {{- end }}
+spec:
+  {{- with $.Values.minReadySeconds }}
+  minReadySeconds: {{ . }}
+  {{- end }}
+  {{- with $.Values.progressDeadlineSeconds }}
+  progressDeadlineSeconds: {{ . }}
+  {{- end }}
+  {{- if and $.Values.replicaCount (not $.Values.autoscaling.enabled) }}
+  replicas: {{ $.Values.replicaCount }}
+  {{- end }}
+  {{- with $.Values.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ . }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "rxl-common.selectorLabels" $ | nindent 6 }}
+      {{- with $deploymentZoneLabel }}
+      {{ . }}
+      {{- end }}
+  {{- with $.Values.deploymentStrategy }}
+  strategy:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
+  template:
+    metadata:
+      annotations:
+        {{- include "rxl-common.podAnnotations" $ | nindent 8 }}
+        {{- with $.Values.podAnnotations }}
+        {{- range $annotation, $value := index . }}
+        {{ $annotation }}: {{ tpl $value $ | quote }}
+        {{- end }}
+        {{- end }}
+      labels:
+        {{- include "rxl-common.labels" $ | nindent 8 }}
+        {{- include "rxl-common.istioLabels" $ | nindent 8 }}
+        {{- with $.Values.podLabels }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
+        {{- end }}
+        {{- with $deploymentZoneLabel }}
+        {{ . }}
+        {{- end }}
+    spec:
+      nodeSelector:
+        {{- include "rxl-common.nodeSelector" $ | nindent 8 }}
+        {{- with $deploymentZoneLabel }}
+        {{ . }}
+        {{- end }}
+      {{- with $.Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if not $disableTopoSpreadFunction }}
+      {{- if or $.Values.topologySpreadConstraints $.Values.enableTopologySpread }}
+      topologySpreadConstraints:
+        {{- include "rxl-common.topologySpreadConstraints" $ | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml $.Values.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ include "rxl-common.serviceAccountName" $ }}
+      {{- with $.Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
+      {{- if or $.Values.volumes $.Values.volumesString }}
+      volumes:
+        {{- with $.Values.volumes }}{{ toYaml . | nindent 8 }}{{ end }}
+        {{- with $.Values.volumesString }}{{ tpl . $ | nindent 8 }}{{ end }}
+      {{- end }}
+      {{- with $.Values.initContainers}}
+      initContainers:
+        {{- range $initContainer := index .}}
+        - {{- tpl (toString (toYaml $initContainer)) $ | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      containers:
+        {{- with $.Values.extraContainers}}
+        {{- range $extraContainer := index .}}
+        - {{- tpl (toString (toYaml $extraContainer)) $ | nindent 10 }}
+        {{- end }}
+        {{- end }}
+        - name: {{ include "rxl-common.containerName" $ }}
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: {{ include "rxl-common.imageFqdn" $ }}
+          {{- with $.Values.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $.Values.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          {{- with $.Values.preStopCommand }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  {{- toYaml . | nindent 18 }}
+          {{- end }}
+          {{- if or $.Values.envFrom $.Values.secrets }}
+          envFrom:
+            {{- if $.Values.secrets }}
+            - secretRef:
+                name:  {{ $.Release.Name }}-secrets
+            {{- end }}
+            {{- with $.Values.envFrom}}
+            {{- range $env := index .}}
+            {{- with $env.configMapRef }}
+            - configMapRef:
+                name: {{ tpl (required ".name key must be set in configMapRef" .name) $ }}
+            {{- end }}
+            {{- with $env.secretRef }}
+            - secretRef:
+                name: {{ tpl (required ".name key must be set on secretRef" .name) $ }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- if or $.Values.env }}
+          env:
+            {{- with $.Values.env }}
+            {{- range $env := index . }}
+            - name: {{ tpl $env.name $ }}
+              {{- if $env.value }}
+              value: {{ tpl $env.value $ | quote }}
+              {{- else if $env.valueFrom }}
+              valueFrom: {{ tpl (toYaml $env.valueFrom) $ | nindent 16 }}
+              {{- end }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+
+          {{- with $.Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          ports:
+            {{- include "rxl-common.containerPorts" $ | nindent 12 }}
+            {{- include "rxl-common.monitorPodPorts" $ | nindent 12 }}
+          {{- with $.Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $.Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $.Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+---
+
+{{- if $.Values.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "rxl-common.labels" $ | nindent 4 }}
+    {{- with $deploymentZoneLabel }}
+    {{ . }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $fullName }}
+  {{- with $.Values.autoscaling.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  minReplicas: {{ $.Values.autoscaling.minReplicas }}
+  maxReplicas: {{ $.Values.autoscaling.maxReplicas }}
+  metrics:
+    {{- /* https://github.com/kubernetes/kubernetes/issues/74099 */}}
+    {{- with $.Values.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ . }}
+    {{- end }}
+    {{- with $.Values.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ . }}
+    {{- end }}
+{{- end }}
+
+---
+
+{{- if $.Values.podDisruptionBudget -}}
+{{- if lt ($.Values.replicaCount | int) 2 }}
+{{- fail "Deployment replica count can not be less than 2 in order to configure PDB. Please configure Replica count greater than or equal to 2." }}
+{{- end }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "rxl-common.labels" $ | nindent 4 }}
+    {{- with $deploymentZoneLabel }}
+    {{ . }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "rxl-common.selectorLabels" $ | nindent 6 }}
+      {{- with $deploymentZoneLabel }}
+      {{ . }}
+      {{- end }}
+  {{ toYaml $.Values.podDisruptionBudget | nindent 2 }}
+{{- end }}
+
+---
+
+{{- end }}
