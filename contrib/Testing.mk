@@ -19,9 +19,9 @@ KIND_CLUSTER_NAME := default
 export PATH    := $(VENV_BIN):$(BIN_DIR):$(PATH)
 
 ifeq ($(OSNAME),linux)
-	GET_HELM_DOCS_URL ?= https://github.com/norwoodj/helm-docs/releases/download/v1.5.0/helm-docs_1.5.0_Linux_x86_64.tar.gz
+	GET_HELM_DOCS_URL ?= https://github.com/norwoodj/helm-docs/releases/download/v1.11.0/helm-docs_1.11.0_Linux_x86_64.tar.gz
 else
-	GET_HELM_DOCS_URL ?= https://github.com/norwoodj/helm-docs/releases/download/v1.5.0/helm-docs_1.5.0_Darwin_x86_64.tar.gz
+	GET_HELM_DOCS_URL ?= https://github.com/norwoodj/helm-docs/releases/download/v1.11.0/helm-docs_1.11.0_Darwin_x86_64.tar.gz
 endif
 
 ifeq ($(HELM_TEST_ALL_CHARTS),true)
