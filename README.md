@@ -104,14 +104,10 @@ versioning:
 
 As part of our [CI tests](.github/workflows/ci.yaml), we verify that the
 `README.md` in the chart directory matches the `values.yaml` file properly
-using the [helm_docs][helm_docs] command. This process ensures that each and
+using the [helm-docs][helm_docs] command. This process ensures that each and
 every change to a repository includes the latest and current documentation.
 
-If your [dotfiles](https://github.com/redxcel/dotfiles.git) is updated, then
-you can just run `helm_docs` from inside the chart directory to update the
-documentation before committing your code:
-
-    $ helm_docs
+    $ helm-docs
     time="2021-03-16T15:44:46Z" level=info msg="Found Chart directories [charts/simple-app]"
     time="2021-03-16T15:44:46Z" level=info msg="Generating README Documentation for chart /helm-docs/charts/simple-app"
 
