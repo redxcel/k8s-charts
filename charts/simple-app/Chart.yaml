@@ -2,12 +2,12 @@ apiVersion: v2
 name: simple-app
 description: Default Microservice Helm Chart
 type: application
-version: 0.0.2
+version: 0.0.1
 appVersion: latest
 maintainers:
   - name: aprxl45
     email: devops@redxcel.com
 dependencies:
   - name: rxl-common
-    version: 0.0.2
+    version: 0.0.1
     repository: file://../rxl-common
