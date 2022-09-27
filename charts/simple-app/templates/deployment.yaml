@@ -225,7 +225,6 @@ spec:
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-
 ---
 
 {{- if $.Values.autoscaling.enabled }}
