@@ -1,0 +1,32 @@
+apiVersion: v1
+entries:
+  rxl-common:
+  - apiVersion: v2
+    appVersion: latest
+    created: "2022-09-27T17:34:36.204284452Z"
+    description: A helper chart used by most of our other charts
+    digest: 05e4c997f9d612f6164f4796ef5fd57876023febd3e9ff449e402d6ace02271f
+    name: rxl-common
+    type: library
+    urls:
+    - https://github.com/redxcel/k8s-charts/releases/download/rxl-common-0.0.1/rxl-common-0.0.1.tgz
+    version: 0.0.1
+  simple-app:
+  - apiVersion: v2
+    appVersion: latest
+    created: "2022-09-27T17:34:36.325312372Z"
+    dependencies:
+    - name: rxl-common
+      repository: file://../rxl-common
+      version: 0.0.1
+    description: Default Microservice Helm Chart
+    digest: 169491f51d39aeb1dadd6bbaf67249ad477623cff08a3449edf13c1fc7e377d5
+    maintainers:
+    - email: devops@redxcel.com
+      name: aprxl45
+    name: simple-app
+    type: application
+    urls:
+    - https://github.com/redxcel/k8s-charts/releases/download/simple-app-0.0.1/simple-app-0.0.1.tgz
+    version: 0.0.1
+generated: "2022-09-27T17:34:36.325382276Z"
