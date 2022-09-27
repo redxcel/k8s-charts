@@ -1,5 +1,0 @@
-{{- include "rxl-common.serviceMonitor" . }}
-
----
-
-{{- include "rxl-common.monitorRules" . }}

@@ -1,6 +1,0 @@
-apiVersion: v2
-name: rxl-common
-description: A helper chart used by most of our other charts
-type: library
-version: 0.1.0
-appVersion: latest
