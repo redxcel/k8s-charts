@@ -77,7 +77,7 @@ readinessProbe:
 # -- (`ContainerPort[]`) A list of Port objects that are exposed by the
 # service. These ports are applied to the main container. The port list
 # is also used to generate Network Policies that allow ingress into the pods.
-#See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.21/#containerport-v1-core
+# See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.21/#containerport-v1-core
 # for details.
 # **Note: We have added an optional "port" field to this list that allows the
 # user to override the Service Port (for example 80) that a client  connects
@@ -693,7 +693,6 @@ prometheusRules:
 # Additional sidecar containers to include with the base application
 # container. The container definitions can include template variables.
 extraContainers: []
-
 
 # Init Containers
 #

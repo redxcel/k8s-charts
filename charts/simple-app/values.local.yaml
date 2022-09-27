@@ -27,4 +27,3 @@ secrets:
 
 network:
   allowedNamespaces: [foo, bar]
-

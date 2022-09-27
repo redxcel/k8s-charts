@@ -2,7 +2,7 @@
 
 Default Microservice Helm Chart
 
-![Version: 0.0.1](https://img.shields.io/badge/Version-0.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
 
 [deployments]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
 [hpa]: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
@@ -75,7 +75,7 @@ kmsSecretsRegion: us-west-2 (AWS region where the KMS key is located)
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../rxl-common | rxl-common | 0.0.1 |
+| file://../rxl-common | rxl-common | 0.1.0 |
 
 ## Values
 
