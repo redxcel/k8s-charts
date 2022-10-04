@@ -64,15 +64,9 @@ startupProbe:
 
 # -- A PodSpec container "livenessProbe" configuration object.
 livenessProbe:
-  httpGet:
-    path: /
-    port: http
 
 # -- A PodSpec container "readinessProbe" configuration object.
 readinessProbe:
-  httpGet:
-    path: /
-    port: http
 
 # -- (`ContainerPort[]`) A list of Port objects that are exposed by the
 # service. These ports are applied to the main container. The port list
