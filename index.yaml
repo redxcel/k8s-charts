@@ -24,6 +24,23 @@ entries:
   simple-app:
   - apiVersion: v2
     appVersion: latest
+    created: "2023-01-19T11:20:32.623136254Z"
+    dependencies:
+    - name: rxl-common
+      repository: file://../rxl-common
+      version: 0.1.0
+    description: Default Microservice Helm Chart
+    digest: 2a655c703d867548806dddb5351b1c3ff83c24c9d50b9304cb7bc0c2114e9f87
+    maintainers:
+    - email: devops@redxcel.com
+      name: aprxl45
+    name: simple-app
+    type: application
+    urls:
+    - https://github.com/redxcel/k8s-charts/releases/download/simple-app-0.1.2/simple-app-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: latest
     created: "2022-10-04T03:05:09.698424397Z"
     dependencies:
     - name: rxl-common
@@ -73,4 +90,4 @@ entries:
     urls:
     - https://github.com/redxcel/k8s-charts/releases/download/simple-app-0.0.1/simple-app-0.0.1.tgz
     version: 0.0.1
-generated: "2022-10-04T03:05:09.698617896Z"
+generated: "2023-01-19T11:20:32.623157253Z"
