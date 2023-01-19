@@ -21,7 +21,6 @@ metadata:
         }
       }
     {{- end }}
-    alb.ingress.kubernetes.io/tags: kubernetes_namespace={{ .Release.Namespace }}
 spec:
   rules:
     - host: {{ tpl .Values.ingress.host . | quote }}
