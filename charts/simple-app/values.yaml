@@ -12,6 +12,7 @@ revisionHistoryLimit: 3
 # -- Set up a PodDisruptionBudget for the Deployment. See
 # https://kubernetes.io/docs/tasks/run-application/configure-pdb/ for more
 # details.
+enablePodDisruptionBudget: true
 podDisruptionBudget:
   maxUnavailable: 1
 
