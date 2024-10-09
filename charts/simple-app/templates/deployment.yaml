@@ -293,7 +293,6 @@ spec:
       {{- end }}
   {{ toYaml $.Values.podDisruptionBudget | nindent 2 }}
 {{- end }}
-
 {{- end }}
 ---
 
